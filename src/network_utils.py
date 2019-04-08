@@ -1,7 +1,7 @@
 import subprocess
 from collections import namedtuple
 
-NetworkScanResult = namedtuple('NetworkScanResult', ['ip', 'mac', 'info'])
+HostInfo = namedtuple('NetworkScanResult', ['ip', 'mac', 'info'])
 
 
 def cli_exec(command, *args):
@@ -51,4 +51,4 @@ def scan_network(interface):
     network = '.'.join(ip.split('.')[0:3] + ['0'])
     stdout, _ = cli_exec('sudo', 'arp-scan', '{}/{}'.format(network, bit_mask))
     stdout = stdout.decode().splitlines()[2:-3]
-    return [NetworkScanResult(*line.split('\t')) for line in stdout]
+    return [HostInfo(*line.split('\t')) for line in stdout]
