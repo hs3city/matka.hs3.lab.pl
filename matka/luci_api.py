@@ -1,4 +1,4 @@
-from luci_rpc_client import connect, disconnect, request, apply, ApiConnection
+from matka.luci_rpc_client import connect, disconnect, request, apply, ApiConnection
 from typing import Sequence, Mapping, Generic, TypeVar
 from collections import namedtuple
 
@@ -19,8 +19,16 @@ def connected(method):
     return wrapper
 
 
+def auto_apply(method):
+    def _apply(connection, *args, **kwargs):
+        rsp = method(connection, *args, **kwargs)
+        apply(connection)
+        return rsp
+    return _apply
+
+
 @connected
-def get_all(connection: ApiConnection, config: str, section: str=None) -> dict:
+def get_all(connection: ApiConnection, config: str, section: str = None) -> dict:
     """Get all sections of a config or all values of a section.
     :param connection:
     :param config:UCI config name
@@ -31,18 +39,9 @@ def get_all(connection: ApiConnection, config: str, section: str=None) -> dict:
 
 
 @connected
-def delete(connection: ApiConnection, config: str, section: str):
-    rsp = request(connection, 'uci', 'delete', config, section)
-    apply(connection)
-    return rsp
-
-
-def auto_apply(method):
-    def _apply(connection, *args, **kwargs):
-        rsp = method(connection, *args, **kwargs)
-        apply(connection)
-        return rsp
-    return _apply
+@auto_apply
+def delete_all(connection, config, section):
+    return request(connection, 'uci', 'delete', config, section)
 
 
 @connected
